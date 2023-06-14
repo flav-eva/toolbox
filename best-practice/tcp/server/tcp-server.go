@@ -18,7 +18,7 @@ func main() {
 	}
 	defer listener.Close()
 	// listen incoming connection
-	conn, err := listener.Accept()
+	conn, err := listener.Accept() // 这里会阻塞，等待客户端连接
 	if err != nil {
 		panic(err)
 	}
@@ -35,7 +35,7 @@ func main() {
 
 		// receive message
 		buf := make([]byte, 1024)
-		_, err = conn.Read(buf)
+		_, err = conn.Read(buf) // 这里读取客户端发送来的请求，如果客户端关闭，这里会抛错
 		if err != nil {
 			panic(err)
 		}
