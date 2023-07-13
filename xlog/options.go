@@ -1,69 +1,26 @@
 package xlog
 
-import (
-	"context"
-	"io"
+type (
+	ZapCFG struct {
+		Development       bool `json:"development"` // 是否开发环境
+		Debug             bool `json:"debug"`       // 是否 debug
+		Sample            bool `json:"sample"`      // 是否采样，默认zap是采样的，在生产环境设置为false，关闭采样
+		CallerSkip        int  `json:"caller_skip"` // callerSkip 打印文件和行号
+		DisableStackTrace bool `json:"disable_stack_trace"`
+
+		Fields     *Fields     `json:"fields"`     // 携带一些自定义信息
+		Lumberjack *Lumberjack `json:"lumberjack"` // 日志分割 options
+	}
+	Fields struct {
+		App         string                 `json:"app"`
+		ExtraFields map[string]interface{} `json:"extra_fields"`
+		// add more info
+	}
+	Lumberjack struct {
+		LogPath    string `json:"log_path"`    // 日志文件路径，默认 os.TempDir()
+		MaxSize    int    `json:"max_size"`    // 日志保存大小，默认 100 MB
+		MaxBackups int    `json:"max_backups"` // 日志备份数
+		MaxAge     int    `json:"max_age"`     // 最长保存天数
+		Compress   bool   `json:"compress"`    // 是否压缩，默认不压缩
+	}
 )
-
-// Options 可选项，可选字段，xlog 一些基础配置
-type Options struct {
-	// xlog name
-	Name string
-	// logging level. default is InfoLevel
-	Level Level
-	// fields to log
-	Fields map[string]any
-	// output file, default is os.Stdout
-	Out io.Writer
-	// Caller skip frame file:line info
-	CallerSkipCount int
-	// context
-	Context context.Context
-}
-
-type OptionFunc func(*Options)
-
-// WithLevel 等同于 SetLevel for Options
-//
-//	func(o *Options, level Level) {
-//	  o.Level = level
-//	}
-func WithLevel(level Level) OptionFunc {
-	return func(o *Options) {
-		o.Level = level
-	}
-}
-
-// WithFields set fields for Options
-func WithFields(fields map[string]any) OptionFunc {
-	return func(o *Options) {
-		o.Fields = fields
-	}
-}
-
-func WithOutput(out io.Writer) OptionFunc {
-	return func(o *Options) {
-		o.Out = out
-	}
-}
-
-func WithCallerSkipCount(skip int) OptionFunc {
-	return func(o *Options) {
-		o.CallerSkipCount = skip
-	}
-}
-
-func WithName(name string) OptionFunc {
-	return func(o *Options) {
-		o.Name = name
-	}
-}
-
-func SetCtxValue(k, v any) OptionFunc {
-	return func(o *Options) {
-		if o.Context == nil {
-			o.Context = context.Background()
-		}
-		o.Context = context.WithValue(o.Context, k, v)
-	}
-}
