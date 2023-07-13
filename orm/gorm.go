@@ -49,24 +49,24 @@ func OpenDatabaseForMySQL(cfg *DBConfig) (*gorm.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	// dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=%s", cfg.User, cfg.Password, cfg.Host, cfg.DbName, cfg.Loc)
+	// dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=%s", cfg.DBUser, cfg.DBPassword, cfg.DBHost, cfg.DBName, cfg.Loc)
 	dsnCfg := &mysql.Config{
-		User:                 cfg.User,
-		Passwd:               cfg.Password,
+		User:                 cfg.DBUser,
+		Passwd:               cfg.DBPassword,
 		Net:                  "tcp",
-		Addr:                 cfg.Host,
-		DBName:               cfg.DbName,
+		Addr:                 cfg.DBHost,
+		DBName:               cfg.DBName,
 		Loc:                  loc,
 		Params:               map[string]string{"charset": "utf8mb4"},
 		AllowNativePasswords: true,
 		ParseTime:            true,
 	}
-	if cfg.EnableTLS {
+	if cfg.DBEnableTLS {
 		var onceErr error
 		once.Do(func() {
 			var pem []byte
 			rootCertPool := x509.NewCertPool()
-			pem, onceErr = os.ReadFile(cfg.CaCertPEM)
+			pem, onceErr = os.ReadFile(cfg.DBCaCertPEM)
 			if err != nil {
 				return
 			}
@@ -102,8 +102,8 @@ func OpenDatabaseForMySQL(cfg *DBConfig) (*gorm.DB, error) {
 
 	if err := db.Use(dbresolver.Register(dbresolver.Config{}).
 		SetConnMaxLifetime(60 * time.Second).
-		SetMaxIdleConns(cfg.ConnPoolSize).
-		SetMaxOpenConns(cfg.ConnPoolSize)); err != nil {
+		SetMaxIdleConns(cfg.DBConnPoolSize).
+		SetMaxOpenConns(cfg.DBConnPoolSize)); err != nil {
 		return nil, fmt.Errorf("gorm initialize dbresolver: %w", err)
 	}
 
